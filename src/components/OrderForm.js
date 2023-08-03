@@ -7,8 +7,15 @@ import TextField from '@mui/material/TextField';
 import { Button, makeStyles } from '@material-ui/core';
 import Autocomplete from '@mui/material/Autocomplete';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import pantoneColors from './pantone-coated.json';
 
 registerLocale('tr', tr);
+const getColorSwatchStyle = (color) => ({
+    backgroundColor: color.hex,
+    width: '10px',
+    height: '10px',
+    marginRight: '5px',
+});
 const useStyles = makeStyles((theme) => ({
     button: {
         backgroundColor: '#4CAF50',
@@ -43,6 +50,7 @@ const FormWrapper = styled.div`
 const ComponentWrapper = styled.div`
   margin-bottom: 20px;
 `;
+
 const OrderForm = () => {
     const classes = useStyles();
     const [order, setOrder] = useState({
@@ -51,26 +59,26 @@ const OrderForm = () => {
         firmaAdi: '',
         isinAdi: '',
         isinAdedi: '',
-        kagitTuru: null, // Change this to null to match the Autocomplete options format
+        kagitTuru: null,
         kagitGramaji: '',
         kagitOlculeri: {
             en: '',
-            boy: ''
+            boy: '',
         },
         baskiOlculeri: {
             en: '',
-            boy: ''
+            boy: '',
         },
-        baskiRenkAdedi: null, // Change this to null to match the Autocomplete options format
-        baskiTuru: null, // Change this to null to match the Autocomplete options format
+        standartBaskiRenkleri: null,
+        baskiTuru: null,
         baskiRenkleri: [],
         ekstraBaskiRenkleri: [],
-        baskiMakinasi: null, // Change this to null to match the Autocomplete options format
-        kalipTuru: null, // Change this to null to match the Autocomplete options format
+        baskiMakinasi: null,
+        kalipTuru: null,
         kalipAdedi: '',
-        selefon: { value: 'Selefon Yok', label: 'Selefon Yok' }, // Set the default value as an object
-        kesim: { value: 'Kesim Yok', label: 'Kesim Yok' }, // Set the default value as an object
-        bicakTuru: { value: 'Bıçak Yok', label: 'Bıçak Yok' }, // Set the default value as an object
+        selefon: { value: 'Yok', label: 'Yok' },
+        kesim: { value: 'Yok', label: 'Yok' },
+        bicakTuru: { value: 'Bıçak Yok', label: 'Bıçak Yok' },
         bicakKodu: '',
         siparisDurumu: 'Onay bekliyor',
     });
@@ -80,32 +88,21 @@ const OrderForm = () => {
         { value: 'M', label: 'Magenta (M)' },
         { value: 'Y', label: 'Yellow (Y)' },
         { value: 'K', label: 'Key (Black) (K)' },
+        { value: 'CM', label: 'Cyan and Magenta (CM)' },
+        { value: 'CY', label: 'Cyan and Yellow (CY)' },
+        { value: 'CMY', label: 'Cyan, Magenta, and Yellow (CMY)' },
+        { value: 'CK', label: 'Cyan and Key (CK)' },
+        { value: 'MK', label: 'Magenta and Key (MK)' },
+        { value: 'YK', label: 'Yellow and Key (YK)' },
+        { value: 'CMK', label: 'Cyan, Magenta, and Key (CMK)' },
+        { value: 'CYK', label: 'Cyan, Yellow, and Key (CYK)' },
+        { value: 'MYK', label: 'Magenta, Yellow, and Key (MYK)' },
+        { value: 'CMYK', label: 'Cyan, Magenta, Yellow, and Key (CMYK)' },
     ]);
-    
-    if (typeof order.baskiRenkAdedi === 'string') {
-        order.baskiRenkAdedi = { value: order.baskiRenkAdedi, label: order.baskiRenkAdedi };
-    }
-
-    if (typeof order.baskiTuru === 'string') {
-        order.baskiTuru = { value: order.baskiTuru, label: order.baskiTuru };
-    }
-
-
-    const [ekstraBaskiRenk, setEkstraBaskiRenk] = useState('');
-
-    const handleSubmit = async (e) => {
+    const isOptionEqualToValue = (option, value) => option.pantone === value.pantone;
+    const handleSubmit = (e) => {
         e.preventDefault();
         try {
-            // Add the selected extra color directly to the baskiRenkleri array
-            if (ekstraBaskiRenk !== '') {
-                setOrder((prevOrder) => ({
-                    ...prevOrder,
-                    baskiRenkleri: [...prevOrder.baskiRenkleri, { value: ekstraBaskiRenk, label: ekstraBaskiRenk }],
-                    ekstraBaskiRenkleri: [...prevOrder.ekstraBaskiRenkleri, ekstraBaskiRenk],
-                }));
-                setEkstraBaskiRenk('');
-            }
-
             // Siparişi kaydetmek için API çağrısı yapabilirsiniz.
             // Örnek bir API çağrısı aşağıda gösterilmiştir:
             // const response = await axios.post('http://localhost:3000/api/siparis', order);
@@ -116,18 +113,6 @@ const OrderForm = () => {
             alert('Sipariş gönderilirken bir hata oluştu!');
         }
     };
-    const handleAddExtraColor = () => {
-        if (ekstraBaskiRenk !== '') {
-            const newColor = { value: ekstraBaskiRenk, label: ekstraBaskiRenk };
-            setOrder((prevOrder) => ({
-                ...prevOrder,
-                baskiRenkleri: [...prevOrder.baskiRenkleri, newColor],
-                ekstraBaskiRenkleri: [...prevOrder.ekstraBaskiRenkleri, ekstraBaskiRenk],
-            }));
-            setEkstraBaskiRenk('');
-        }
-    };
-    
 
     return (
         <ThemeProvider theme={theme}>
@@ -208,6 +193,7 @@ const OrderForm = () => {
                                     <div style={{ flex: '1', paddingRight: '10px' }}>
                                         <Autocomplete
                                             autoHighlight
+                                            isOptionEqualToValue={(option, value) => option.label === value.label}
                                             options={[
                                                 { value: 'KRAFT', label: 'KRAFT' },
                                                 { value: 'KROME', label: 'KROME' },
@@ -216,7 +202,7 @@ const OrderForm = () => {
                                                 { value: 'KUŞE ÇIKARTMA', label: 'KUŞE ÇIKARTMA' },
                                                 { value: 'PELUR', label: 'PELUR' },
                                             ]}
-                                            value={order.kagitTuru}
+                                            value={order.kagitTuru !== null ? order.kagitTuru : null} // Use null explicitly
                                             onChange={(event, newValue) => setOrder({ ...order, kagitTuru: newValue })}
                                             getOptionLabel={(option) => option.label}
                                             renderInput={(params) => <TextField {...params} label="Kağıt Türü" />}
@@ -260,8 +246,8 @@ const OrderForm = () => {
                                                 { value: 'Müşteri', label: 'Müşteri' },
                                                 { value: 'Yeni', label: 'Yeni' },
                                             ]}
-                                            isOptionEqualToValue={(option, value) => option.value === value.value}
-                                            value={order.kalipTuru}
+                                            isOptionEqualToValue={(option, value) => option.label === value.label}
+                                            value={order.kalipTuru !== null ? order.kalipTuru : null} // Use null explicitly
                                             onChange={(event, newValue) => setOrder({ ...order, kalipTuru: newValue })}
                                             getOptionLabel={(option) => option.label}
                                             renderInput={(params) => <TextField {...params} label="Kalıp Türü" />}
@@ -274,188 +260,156 @@ const OrderForm = () => {
                                             type="number"
                                             value={order.kalipAdedi}
                                             onChange={(e) => setOrder({ ...order, kalipAdedi: e.target.value })}
+                                            fullWidth
                                         />
                                     </div>
                                 </div>
                             </ComponentWrapper>
+
+
                             <ComponentWrapper>
-                                <div style={{ display: 'flex', width: '100%', marginBottom: '10px' }}>
-                                    {/* Baskı Makinası */}
-                                    <div style={{ flex: '4', paddingRight: '10px' }}>
+                                <div style={{ display: 'flex', width: '100%' }}>
+                                    <div style={{ flex: '1', paddingRight: '10px' }}>
+                                        <Autocomplete
+                                            options={baskiRenkSecimi}
+                                            isOptionEqualToValue={(option, value) => option.label === value.label}
+                                            value={order.standartBaskiRenkleri !== null ? order.standartBaskiRenkleri : null} // Use null explicitly
+                                            onChange={(event, newValue) => setOrder({ ...order, standartBaskiRenkleri: newValue })}
+                                            getOptionLabel={(option) => option.label}
+                                            renderInput={(params) => <TextField {...params} label="Standart Baskı Renkleri" />}
+                                        />
+                                    </div>
+                                    <div style={{ flex: '1', paddingRight: '10px' }}>
                                         <Autocomplete
                                             options={[
-                                                { value: 'KOMORİ 70X100', label: 'KOMORİ 70X100' },
-                                                { value: 'ROLAND 70X100', label: 'ROLAND 70X100' },
-                                                { value: 'PLANETA 100X140', label: 'PLANETA 100X140' },
+                                                { value: '4+0', label: '4+0 (CMYK)' },
+                                                { value: '4+1', label: '4+1 (CMYK + 1 PMS)' },
+                                                { value: '4+2', label: '4+2 (CMYK + 2 PMS)' },
+                                                { value: '4+3', label: '4+3 (CMYK + 3 PMS)' },
+                                                { value: '5+4', label: '5+4 (CMYK + 4 PMS)' },
                                             ]}
-                                            isOptionEqualToValue={(option, value) => option.value === value.value}
-                                            value={order.baskiMakinasi}
+                                            isOptionEqualToValue={(option, value) => option.label === value.label}
+                                            value={order.baskiTuru !== null ? order.baskiTuru : null} // Use null explicitly
+                                            onChange={(event, newValue) => setOrder({ ...order, baskiTuru: newValue })}
+                                            getOptionLabel={(option) => option.label}
+                                            renderInput={(params) => <TextField {...params} label="Baskı Türü" />}
+                                        />
+                                    </div>
+                                </div>
+                            </ComponentWrapper>
+
+                            <ComponentWrapper>
+                                <div style={{ display: 'flex', width: '100%' }}>
+                                    <div style={{ flex: '1', paddingRight: '10px' }}>
+                                        <Autocomplete
+                                            multiple
+                                            options={pantoneColors}
+                                            getOptionLabel={(option) => option.pantone || ''}
+                                            value={order.ekstraBaskiRenkleri}
+                                            onChange={(event, newValue) => setOrder({ ...order, ekstraBaskiRenkleri: newValue })}
+                                            renderInput={(params) => <TextField {...params} label="Ekstra Baskı Renkleri Seçin" />}
+                                            isOptionEqualToValue={isOptionEqualToValue}
+                                            fullWidth
+                                            renderOption={(props, option) => (
+                                                <li {...props}>
+                                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                        <div style={getColorSwatchStyle(option)} />
+                                                        PANTONE {option.pantone}
+                                                    </div>
+                                                </li>
+                                            )}
+                                        />
+
+
+                                    </div>
+                                </div>
+                            </ComponentWrapper>
+
+
+
+
+                            <ComponentWrapper>
+                                <div style={{ display: 'flex', width: '100%' }}>
+                                    <div style={{ flex: '1', paddingRight: '10px' }}>
+                                        <Autocomplete
+                                            options={[
+                                                { value: 'Seçiniz', label: 'Seçiniz' },
+                                                { value: 'P1', label: 'P1' },
+                                                { value: 'P2', label: 'P2' },
+                                                { value: 'P3', label: 'P3' },
+                                                { value: 'P4', label: 'P4' },
+                                                { value: 'P5', label: 'P5' },
+                                            ]}
+                                            isOptionEqualToValue={(option, value) => option.label === value.label}
+                                            value={order.baskiMakinasi !== null ? order.baskiMakinasi : null} // Use null explicitly
                                             onChange={(event, newValue) => setOrder({ ...order, baskiMakinasi: newValue })}
                                             getOptionLabel={(option) => option.label}
                                             renderInput={(params) => <TextField {...params} label="Baskı Makinası" />}
-                                            fullWidth
                                         />
                                     </div>
 
-                                    {/* Baskı Ölçüsü (En) */}
-                                    <div style={{ flex: '2', paddingRight: '10px' }}>
-                                        <TextField
-                                            label="Baskı Ölçüsü (En)"
-                                            type="number"
-                                            value={order.baskiOlculeri.en}
-                                            onChange={(e) => setOrder({ ...order, baskiOlculeri: { ...order.baskiOlculeri, en: e.target.value } })}
-                                            placeholder="En (mm)"
-                                            fullWidth
-                                        />
-                                    </div>
-
-                                    {/* Baskı Ölçüsü (Boy) */}
-                                    <div style={{ flex: '2' }}>
-                                        <TextField
-                                            label="Baskı Ölçüsü (Boy)"
-                                            type="number"
-                                            value={order.baskiOlculeri.boy}
-                                            onChange={(e) => setOrder({ ...order, baskiOlculeri: { ...order.baskiOlculeri, boy: e.target.value } })}
-                                            placeholder="Boy (mm)"
-                                            fullWidth
-                                        />
-                                    </div>
-                                </div>
-
-                                <div style={{ marginBottom: '10px' }}>
-                                    {/* Baskı Türü */}
-                                    <Autocomplete
-                                        options={[
-                                            { value: 'Tek Yön', label: 'Tek Yön' },
-                                            { value: 'Forma', label: 'Forma' },
-                                            { value: 'Revolta', label: 'Revolta' },
-                                            { value: 'Tumba', label: 'Tumba' }
-                                        ]}
-                                        value={order.baskiTuru}
-                                        onChange={(event, newValue) => setOrder({ ...order, baskiTuru: newValue })}
-                                        getOptionLabel={(option) => option.label}
-                                        renderInput={(params) => <TextField {...params} label="Baskı Türü" />}
-                                        fullWidth
-                                    />
-                                </div>
-                            </ComponentWrapper>
-
-                            <ComponentWrapper>
-                                <div style={{ marginBottom: '10px' }}>
-                                    <Autocomplete
-                                        options={[
-                                            { value: 'Tek Renk', label: 'Tek Renk' },
-                                            { value: 'İki Renk', label: 'İki Renk' },
-                                            { value: 'Üç Renk', label: 'Üç Renk' },
-                                            { value: 'Dört Renk', label: 'Dört Renk' },
-                                            { value: 'Beş Renk', label: 'Beş Renk' },
-                                            { value: 'Altı Renk', label: 'Altı Renk' },
-                                            { value: 'Yedi Renk', label: 'Yedi Renk' },
-                                            { value: 'Sekiz Renk', label: 'Sekiz Renk' },
-                                        ]}
-                                        value={order.baskiRenkAdedi}
-                                        onChange={(event, newValue) => setOrder({ ...order, baskiRenkAdedi: newValue })}
-                                        getOptionLabel={(option) => option.label}
-                                        renderInput={(params) => <TextField {...params} label="Baskı Renk Adedi" />}
-                                    />
-                                </div>
-                                <div style={{ display: 'flex', width: '100%', alignItems: 'flex-end' }}>
-                                    <div style={{ flex: '6', paddingRight: '10px', marginBottom: '10px' }}>
-                                        <Autocomplete
-                                            multiple // Set 'multiple' for multi-select
-                                            options={baskiRenkSecimi}
-                                            value={order.baskiRenkleri}
-                                            onChange={(event, newValue) => setOrder({ ...order, baskiRenkleri: newValue })}
-                                            getOptionLabel={(option) => option.label}
-                                            renderInput={(params) => <TextField {...params} label="Baskı Renkleri" />}
-                                        />
-                                    </div>
-                                    <div style={{ flex: '4', marginBottom: '10px' }}>
-                                        {order.ekstraBaskiRenkleri.map((renk, index) => (
-                                            <div key={index}>
-                                                {/* Add your content for each extra color here */}
-                                            </div>
-                                        ))}
-                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: '10px' }}>
-                                            {/* Add a marginTop of 10px to create the gap */}
-                                            <TextField
-                                                label="Yeni Renk"
-                                                type="text"
-                                                value={ekstraBaskiRenk}
-                                                onChange={(e) => setEkstraBaskiRenk(e.target.value)}
-                                            />
-                                            <div style={{ marginLeft: '10px' }}>
-                                                {/* Add marginLeft of 10px to create the gap */}
-                                                <Button
-                                                    variant="contained"
-                                                    onClick={handleAddExtraColor}
-                                                    size='large'
-                                                    className={classes.button}
-                                                >
-                                                    Ekle
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </ComponentWrapper>
-                            <ComponentWrapper>
-                                <Autocomplete
-                                    options={[
-                                        { value: 'Selefon Yok', label: 'Selefon Yok' },
-                                        { value: 'Ön Parlak', label: 'Ön Parlak' },
-                                        { value: 'Arka Parlak', label: 'Arka Parlak' },
-                                        { value: 'Ön/Arka Parlak', label: 'Ön/Arka Parlak' },
-                                    ]}
-                                    isOptionEqualToValue={(option, value) => option.value === value.value}
-                                    value={order.selefon}
-                                    onChange={(event, newValue) => setOrder({ ...order, selefon: newValue })}
-                                    getOptionLabel={(option) => option.label}
-                                    renderInput={(params) => <TextField {...params} label="Selefon" />}
-                                />
-                            </ComponentWrapper>
-                            <ComponentWrapper>
-                                <div style={{ display: 'flex', width: '100%' }}>
-                                    {/* Kesim */}
-                                    <div style={{ flex: 2, paddingRight: '10px' }}>
+                                    <div style={{ flex: '1' }}>
                                         <Autocomplete
                                             options={[
-                                                { value: 'Kesim Yok', label: 'Kesim Yok' },
-                                                { value: 'Kazanlı Kesim', label: 'Kazanlı Kesim' },
-                                                { value: 'Giyotin Kesim', label: 'Giyotin Kesim' },
+                                                { value: 'Yok', label: 'Yok' },
+                                                { value: 'Cellophane', label: 'Cellophane' },
+                                                { value: 'Mat Selefon', label: 'Mat Selefon' },
+                                                { value: 'Parlak Selefon', label: 'Parlak Selefon' },
+                                                { value: 'Soft Selefon', label: 'Soft Selefon' },
+                                                { value: 'Renkli Selefon', label: 'Renkli Selefon' },
                                             ]}
-                                            isOptionEqualToValue={(option, value) => option.value === value.value}
-                                            value={order.kesim}
+                                            isOptionEqualToValue={(option, value) => option.label === value.label}
+                                            value={order.selefon !== null ? order.selefon : null} // Use null explicitly
+                                            onChange={(event, newValue) => setOrder({ ...order, selefon: newValue })}
+                                            getOptionLabel={(option) => option.label}
+                                            renderInput={(params) => <TextField {...params} label="Selefon" />}
+                                        />
+                                    </div>
+                                </div>
+                            </ComponentWrapper>
+
+
+                            <ComponentWrapper>
+                                <div style={{ display: 'flex', width: '100%' }}>
+                                    <div style={{ flex: '1', paddingRight: '10px' }}>
+                                        <Autocomplete
+                                            options={[
+                                                { value: 'Yok', label: 'Yok' },
+                                                { value: 'Giyotin Kesim', label: 'Giyotin Kesim' },
+                                                { value: 'Kazanlı Kesim', label: 'Kazanlı Kesim' },
+                                            ]}
+                                            isOptionEqualToValue={(option, value) => option.label === value.label}
+                                            value={order.kesim !== null ? order.kesim : null} // Use null explicitly
                                             onChange={(event, newValue) => setOrder({ ...order, kesim: newValue })}
                                             getOptionLabel={(option) => option.label}
                                             renderInput={(params) => <TextField {...params} label="Kesim" />}
-                                            fullWidth
                                         />
                                     </div>
 
-                                    {/* Bıçak Türü */}
-                                    <div style={{ flex: 2, paddingRight: '10px' }}>
+                                    <div style={{ flex: '1' }}>
                                         <Autocomplete
                                             options={[
+                                                { value: 'Yok', label: 'Yok' },
                                                 { value: 'Bıçak Yok', label: 'Bıçak Yok' },
-                                                { value: 'Arşiv', label: 'Arşiv' },
-                                                { value: 'Müşteri', label: 'Müşteri' },
-                                                { value: 'Yeni', label: 'Yeni' },
+                                                { value: 'Bıçak Var', label: 'Bıçak Var' },
                                             ]}
-                                            value={order.bicakTuru}
-                                            isOptionEqualToValue={(option, value) => option.value === value.value}
+                                            isOptionEqualToValue={(option, value) => option.label === value.label}
+                                            value={order.bicakTuru !== null ? order.bicakTuru : null} // Use null explicitly
                                             onChange={(event, newValue) => setOrder({ ...order, bicakTuru: newValue })}
                                             getOptionLabel={(option) => option.label}
                                             renderInput={(params) => <TextField {...params} label="Bıçak Türü" />}
-                                            fullWidth
                                         />
                                     </div>
+                                </div>
+                            </ComponentWrapper>
 
-                                    {/* Bıçak Kodu */}
-                                    <div style={{ flex: 2 }}>
+
+                            <ComponentWrapper>
+                                <div style={{ display: 'flex', width: '100%' }}>
+                                    <div style={{ paddingRight: '10px', flex: '1' }}>
                                         <TextField
                                             label="Bıçak Kodu"
-                                            type="number"
+                                            type="text"
                                             value={order.bicakKodu}
                                             onChange={(e) => setOrder({ ...order, bicakKodu: e.target.value })}
                                             fullWidth
@@ -464,17 +418,20 @@ const OrderForm = () => {
                                 </div>
                             </ComponentWrapper>
 
-
-                            <Button type="submit" variant="contained" color="primary">
-                                Sipariş Oluştur
+                            <Button
+                                className={classes.button}
+                                variant="contained"
+                                color="primary"
+                                type="submit"
+                                style={{ width: '100%' }}
+                            >
+                                Siparişi Gönder
                             </Button>
-
                         </form>
-                    </div >
+                    </div>
                 </FormWrapper>
             </Container>
-        </ThemeProvider >
+        </ThemeProvider>
     );
 };
-
 export default OrderForm;

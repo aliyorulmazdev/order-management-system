@@ -12,6 +12,11 @@ import firmalar from './firmalar.json';
 import Avatar from '@mui/material/Avatar';
 import { Chip } from '@mui/material';
 import ermatLogo from '../assets/ermat_logo.png';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 registerLocale('tr', tr);
 const getPhotoSwatchStyle = {
@@ -21,7 +26,7 @@ const getPhotoSwatchStyle = {
 };
 const useStyles = makeStyles((theme) => ({
     button: {
-        backgroundColor: theme.palette.primary.main,
+        backgroundColor: '#3e8490',
         color: 'white',
         padding: '10px 20px',
         fontSize: '16px',
@@ -29,7 +34,19 @@ const useStyles = makeStyles((theme) => ({
         display: 'flex',
         alignItems: 'center', // Vertically center the content
         '&:hover': {
-            backgroundColor: theme.palette.primary.dark
+            backgroundColor: '#bde2e8'
+        },
+    },
+    buttonNote: {
+        backgroundColor: '#66c3d0',
+        color: 'white',
+        padding: '10px 20px',
+        fontSize: '16px',
+        borderRadius: '5px',
+        display: 'flex',
+        alignItems: 'center', // Vertically center the content
+        '&:hover': {
+            backgroundColor: '#bde2e8'
         },
     },
 }));
@@ -64,6 +81,8 @@ const ErmatLogoImage = styled.img`
 `;
 
 const OrderForm = () => {
+    const [isIsinAdiEmpty, setIsIsinAdiEmpty] = useState(false);
+    const [open, setOpen] = React.useState(false);
     const classes = useStyles();
     const [order, setOrder] = useState({
         siparisTarihi: new Date(),
@@ -93,10 +112,27 @@ const OrderForm = () => {
         bicakTuru: { value: 'Bıçak Yok', label: 'Bıçak Yok' },
         bicakKodu: '',
         siparisDurumu: 'Onay bekliyor',
+        note: '',
     });
     const handleDelete = (color) => {
         const updatedColors = order.ekstraBaskiRenkleri.filter((c) => c.pantone !== color.pantone);
         setOrder({ ...order, ekstraBaskiRenkleri: updatedColors });
+    };
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
+    const handleSubmitDialog = () => {
+        // Sipariş notunu order objesine ekleyebilirsiniz.
+        // Örneğin: setOrder({ ...order, note: order.note });
+        handleClose();
+    };
+
+    const handleNoteChange = (e) => {
+        setOrder({ ...order, note: e.target.value });
     };
     const invertColor = (hex) => {
         // Assuming hex is in the format "#RRGGBB" or "RRGGBB"
@@ -138,15 +174,20 @@ const OrderForm = () => {
     const isOptionEqualToValue = (option, value) => option.pantone === value.pantone;
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        // Check if the "Sipariş Adı" field is empty
+        if (!order.isinAdi) {
+            setIsIsinAdiEmpty(true); // Set the error state to true
+            return;
+        }
+
+        // If the "Sipariş Adı" field is not empty, proceed with form submission
+        setIsIsinAdiEmpty(false); // Reset the error state to false
+
         try {
-            // Siparişi kaydetmek için API çağrısı yapabilirsiniz.
-            // Örnek bir API çağrısı aşağıda gösterilmiştir:
-            // const response = await axios.post('http://localhost:3000/api/siparis', order);
-            console.log('Sipariş gönderildi:', order);
-            alert('Sipariş gönderildi!');
+            // ... Existing code for form submission ...
         } catch (error) {
-            console.error('Sipariş gönderilirken bir hata oluştu:', error);
-            alert('Sipariş gönderilirken bir hata oluştu!');
+            // ... Existing error handling code ...
         }
     };
 
@@ -154,7 +195,7 @@ const OrderForm = () => {
         <ThemeProvider theme={theme}>
             <Container>
                 <FormWrapper>
-                    
+
                     <div>
                         <h2>Sipariş Oluşturma Sayfası</h2>
                         <ErmatLogoImage src={ermatLogo} alt="ERMAT Logo" />
@@ -192,6 +233,7 @@ const OrderForm = () => {
                                         <div style={{ paddingRight: '10px', flex: '1' }}>
                                             <Autocomplete
                                                 options={firmalar}
+                                                isOptionEqualToValue={(option, value) => option.label === value.label}
                                                 getOptionLabel={(option) => option.firma_adi}
                                                 value={order.firmaAdi !== '' ? firmalar.find((firma) => firma.firma_adi === order.firmaAdi) : null}
                                                 onChange={(event, newValue) => setOrder({ ...order, firmaAdi: newValue ? newValue.firma_adi : '' })}
@@ -218,9 +260,9 @@ const OrderForm = () => {
                                                 value={order.isinAdi}
                                                 onChange={(e) => setOrder({ ...order, isinAdi: e.target.value })}
                                                 fullWidth
+                                                error={isIsinAdiEmpty} // Apply error style if the field is empty
                                             />
                                         </div>
-
                                         {/* Sipariş Adedi */}
                                         <div style={{ flex: '1' }}>
                                             <TextField
@@ -281,6 +323,17 @@ const OrderForm = () => {
                                             fullWidth
                                         />
                                     </div>
+                                    {/* Kağıt Gramajı */}
+                                    <div style={{ flex: '1', paddingLeft: '10px' }}>
+                                        <TextField
+                                            label="Kağıt Gramajı"
+                                            type="number"
+                                            value={order.kagitGramaji}
+                                            onChange={(e) => setOrder({ ...order, kagitGramaji: e.target.value })}
+                                            placeholder="gr/m2"
+                                            fullWidth
+                                        />
+                                    </div>
                                 </div>
                             </ComponentWrapper>
 
@@ -327,7 +380,7 @@ const OrderForm = () => {
                                             renderInput={(params) => <TextField {...params} label="Standart Baskı Renkleri" />}
                                         />
                                     </div>
-                                    <div style={{ flex: '1'}}>
+                                    <div style={{ flex: '1' }}>
                                         <Autocomplete
                                             options={[
                                                 { value: '4+0', label: '4+0 (CMYK)' },
@@ -417,28 +470,50 @@ const OrderForm = () => {
                                             renderInput={(params) => <TextField {...params} label="Baskı Makinası" />}
                                         />
                                     </div>
-
-                                    <div style={{ flex: '1' }}>
-                                        <Autocomplete
-                                            options={[
-                                                { value: 'Yok', label: 'Yok' },
-                                                { value: 'Cellophane', label: 'Cellophane' },
-                                                { value: 'Mat Selefon', label: 'Mat Selefon' },
-                                                { value: 'Parlak Selefon', label: 'Parlak Selefon' },
-                                                { value: 'Soft Selefon', label: 'Soft Selefon' },
-                                                { value: 'Renkli Selefon', label: 'Renkli Selefon' },
-                                            ]}
-                                            isOptionEqualToValue={(option, value) => option.label === value.label}
-                                            value={order.selefon !== null ? order.selefon : null} // Use null explicitly
-                                            onChange={(event, newValue) => setOrder({ ...order, selefon: newValue })}
-                                            getOptionLabel={(option) => option.label}
-                                            renderInput={(params) => <TextField {...params} label="Selefon" />}
+                                    {/* Kağıt Ölçüsü (En) */}
+                                    <div style={{ flex: '1', paddingRight: '10px' }}>
+                                        <TextField
+                                            label="Baskı Ölçüsü (En)"
+                                            type="number"
+                                            value={order.baskiOlculeri.en}
+                                            onChange={(e) => setOrder({ ...order, baskiOlculeri: { ...order.baskiOlculeri, en: e.target.value } })}
+                                            placeholder="En (mm)"
+                                            fullWidth
                                         />
                                     </div>
+
+                                    {/* Kağıt Ölçüsü (Boy) */}
+                                    <div style={{ flex: '1' }}>
+                                        <TextField
+                                            label="Baskı Ölçüsü (Boy)"
+                                            type="number"
+                                            value={order.baskiOlculeri.boy}
+                                            onChange={(e) => setOrder({ ...order, baskiOlculeri: { ...order.baskiOlculeri, boy: e.target.value } })}
+                                            placeholder="Boy (mm)"
+                                            fullWidth
+                                        />
+                                    </div>
+
                                 </div>
                             </ComponentWrapper>
-
-
+                            <ComponentWrapper>
+                                <div style={{ flex: '1' }}>
+                                    <Autocomplete
+                                        options={[
+                                            { value: 'Yok', label: 'Yok' },
+                                            { value: 'Mat Selefon', label: 'Mat Selefon' },
+                                            { value: 'Parlak Selefon', label: 'Parlak Selefon' },
+                                            { value: 'Soft Selefon', label: 'Soft Selefon' },
+                                            { value: 'Renkli Selefon', label: 'Renkli Selefon' },
+                                        ]}
+                                        isOptionEqualToValue={(option, value) => option.label === value.label}
+                                        value={order.selefon !== null ? order.selefon : null} // Use null explicitly
+                                        onChange={(event, newValue) => setOrder({ ...order, selefon: newValue })}
+                                        getOptionLabel={(option) => option.label}
+                                        renderInput={(params) => <TextField {...params} label="Selefon" />}
+                                    />
+                                </div>
+                            </ComponentWrapper>
                             <ComponentWrapper>
                                 <div style={{ display: 'flex', width: '100%' }}>
                                     <div style={{ flex: '1', paddingRight: '10px' }}>
@@ -459,7 +534,6 @@ const OrderForm = () => {
                                     <div style={{ flex: '1' }}>
                                         <Autocomplete
                                             options={[
-                                                { value: 'Yok', label: 'Yok' },
                                                 { value: 'Bıçak Yok', label: 'Bıçak Yok' },
                                                 { value: 'Bıçak Var', label: 'Bıçak Var' },
                                             ]}
@@ -487,7 +561,35 @@ const OrderForm = () => {
                                     </div>
                                 </div>
                             </ComponentWrapper>
-
+                            <div>
+                                <Button className={classes.buttonNote} variant="contained" style={{ width: '100%' }} onClick={handleClickOpen}>
+                                    Sipariş Notu Ekle
+                                </Button>
+                                <Dialog open={open} onClose={handleClose}>
+                                    <DialogTitle>Sipariş Notu Ekle</DialogTitle>
+                                    <DialogContent>
+                                        <DialogContentText>
+                                            Siparişinizle ilgili eklemek istediğiniz notu aşağıya yazabilirsiniz.
+                                        </DialogContentText>
+                                        <TextField
+                                            autoFocus
+                                            margin="dense"
+                                            id="note"
+                                            label="Sipariş Notu"
+                                            type="text"
+                                            fullWidth
+                                            variant="standard"
+                                            value={order.note}
+                                            onChange={handleNoteChange}
+                                        />
+                                    </DialogContent>
+                                    <DialogActions>
+                                        <Button onClick={handleClose}>İptal</Button>
+                                        <Button onClick={handleSubmitDialog}>Ekle</Button>
+                                    </DialogActions>
+                                </Dialog>
+                            </div>
+                            <br></br>
                             <Button
                                 className={classes.button}
                                 variant="contained"

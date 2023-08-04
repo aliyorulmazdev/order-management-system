@@ -8,8 +8,11 @@ import { Button, makeStyles } from '@material-ui/core';
 import Autocomplete from '@mui/material/Autocomplete';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import pantoneColors from './pantone-coated.json';
+<<<<<<< HEAD
 import firmalar from './firmalar.json';
 import Avatar from '@mui/material/Avatar';
+=======
+>>>>>>> 488e93573c39e20c2cb948bd81e39493243e48c2
 
 registerLocale('tr', tr);
 const getColorSwatchStyle = (color) => ({
@@ -18,11 +21,14 @@ const getColorSwatchStyle = (color) => ({
     height: '10px',
     marginRight: '5px',
 });
+<<<<<<< HEAD
 const getPhotoSwatchStyle = {
     width: '40px',
     height: '40px',
     marginRight: '5px',
   };
+=======
+>>>>>>> 488e93573c39e20c2cb948bd81e39493243e48c2
 const useStyles = makeStyles((theme) => ({
     button: {
         backgroundColor: '#4CAF50',

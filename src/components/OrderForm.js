@@ -11,6 +11,7 @@ import pantoneColors from './pantone-coated.json';
 import firmalar from './firmalar.json';
 import Avatar from '@mui/material/Avatar';
 import { Chip } from '@mui/material';
+import ermatLogo from '../assets/ermat_logo.png';
 
 registerLocale('tr', tr);
 const getPhotoSwatchStyle = {
@@ -20,7 +21,7 @@ const getPhotoSwatchStyle = {
 };
 const useStyles = makeStyles((theme) => ({
     button: {
-        backgroundColor: '#4CAF50',
+        backgroundColor: theme.palette.primary.main,
         color: 'white',
         padding: '10px 20px',
         fontSize: '16px',
@@ -28,7 +29,7 @@ const useStyles = makeStyles((theme) => ({
         display: 'flex',
         alignItems: 'center', // Vertically center the content
         '&:hover': {
-            backgroundColor: '#45a049',
+            backgroundColor: theme.palette.primary.dark
         },
     },
 }));
@@ -43,6 +44,7 @@ const Container = styled.div`
 `;
 
 const FormWrapper = styled.div`
+  position: relative; /* Add position relative to the FormWrapper */
   width: 50%;
   padding: 20px;
   border: 1px solid #ccc;
@@ -52,6 +54,13 @@ const FormWrapper = styled.div`
 
 const ComponentWrapper = styled.div`
   margin-bottom: 20px;
+`;
+
+const ErmatLogoImage = styled.img`
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  width: 200px; /* Adjust the width as needed */
 `;
 
 const OrderForm = () => {
@@ -145,9 +154,10 @@ const OrderForm = () => {
         <ThemeProvider theme={theme}>
             <Container>
                 <FormWrapper>
+                    
                     <div>
                         <h2>Sipariş Oluşturma Sayfası</h2>
-
+                        <ErmatLogoImage src={ermatLogo} alt="ERMAT Logo" />
                         <form onSubmit={handleSubmit}>
                             <ComponentWrapper>
                                 <div style={{ display: 'flex', width: '100%' }}>
@@ -481,7 +491,6 @@ const OrderForm = () => {
                             <Button
                                 className={classes.button}
                                 variant="contained"
-                                color="primary"
                                 type="submit"
                                 style={{ width: '100%' }}
                             >

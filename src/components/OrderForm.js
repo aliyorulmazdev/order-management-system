@@ -10,19 +10,14 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import pantoneColors from './pantone-coated.json';
 import firmalar from './firmalar.json';
 import Avatar from '@mui/material/Avatar';
+import { Chip } from '@mui/material';
 
 registerLocale('tr', tr);
-const getColorSwatchStyle = (color) => ({
-    backgroundColor: color.hex,
-    width: '10px',
-    height: '10px',
-    marginRight: '5px',
-});
 const getPhotoSwatchStyle = {
     width: '40px',
     height: '40px',
     marginRight: '5px',
-  };
+};
 const useStyles = makeStyles((theme) => ({
     button: {
         backgroundColor: '#4CAF50',
@@ -37,6 +32,7 @@ const useStyles = makeStyles((theme) => ({
         },
     },
 }));
+
 const theme = createTheme();
 
 const Container = styled.div`
@@ -89,6 +85,30 @@ const OrderForm = () => {
         bicakKodu: '',
         siparisDurumu: 'Onay bekliyor',
     });
+    const handleDelete = (color) => {
+        const updatedColors = order.ekstraBaskiRenkleri.filter((c) => c.pantone !== color.pantone);
+        setOrder({ ...order, ekstraBaskiRenkleri: updatedColors });
+    };
+    const invertColor = (hex) => {
+        // Assuming hex is in the format "#RRGGBB" or "RRGGBB"
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+
+        // Calculate the inverse color values
+        const inverseR = 255 - r;
+        const inverseG = 255 - g;
+        const inverseB = 255 - b;
+
+        // Convert the inverse color values to hex
+        const inverseHex =
+            "#" +
+            ("0" + inverseR.toString(16)).slice(-2) +
+            ("0" + inverseG.toString(16)).slice(-2) +
+            ("0" + inverseB.toString(16)).slice(-2);
+
+        return inverseHex;
+    };
 
     const [baskiRenkSecimi] = useState([
         { value: 'C', label: 'Cyan (C)' },
@@ -297,7 +317,7 @@ const OrderForm = () => {
                                             renderInput={(params) => <TextField {...params} label="Standart Baskı Renkleri" />}
                                         />
                                     </div>
-                                    <div style={{ flex: '1', paddingRight: '10px' }}>
+                                    <div style={{ flex: '1'}}>
                                         <Autocomplete
                                             options={[
                                                 { value: '4+0', label: '4+0 (CMYK)' },
@@ -318,21 +338,44 @@ const OrderForm = () => {
 
                             <ComponentWrapper>
                                 <div style={{ display: 'flex', width: '100%' }}>
-                                    <div style={{ flex: '1', paddingRight: '10px' }}>
+                                    <div style={{ flex: '1' }}>
                                         <Autocomplete
                                             multiple
+
                                             options={pantoneColors}
-                                            getOptionLabel={(option) => option.pantone || ''}
+                                            getOptionLabel={(option) => option.pantone || ''} // this line style should changed to background: option.hex
                                             value={order.ekstraBaskiRenkleri}
                                             onChange={(event, newValue) => setOrder({ ...order, ekstraBaskiRenkleri: newValue })}
-                                            renderInput={(params) => <TextField {...params} label="Ekstra Baskı Renkleri Seçin" />}
+                                            renderInput={(params) => <TextField  {...params} label="Ekstra Baskı Renkleri Seçin" />}
                                             isOptionEqualToValue={isOptionEqualToValue}
                                             fullWidth
+                                            renderTags={(value) =>
+                                                value.map((option, index) => (
+                                                    <Chip
+                                                        onDelete={() => handleDelete(option)}
+                                                        key={index}
+                                                        variant="outlined"
+                                                        label={
+                                                            <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                                {option.pantone}
+                                                            </div>
+                                                        }
+                                                        sx={{ background: option.hex, color: invertColor(option.hex) }}
+                                                    />
+                                                ))
+                                            }
                                             renderOption={(props, option) => (
                                                 <li {...props}>
                                                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                                                        <div style={getColorSwatchStyle(option)} />
-                                                        PANTONE {option.pantone}
+                                                        <div
+                                                            style={{
+                                                                background: option.hex, // Set the background color to hex color Aight
+                                                                width: '10px',
+                                                                height: '10px',
+                                                                marginRight: '5px',
+                                                            }}
+                                                        />
+                                                        <span style={{ color: option.hex }}>{option.pantone}</span>
                                                     </div>
                                                 </li>
                                             )}
@@ -352,11 +395,10 @@ const OrderForm = () => {
                                         <Autocomplete
                                             options={[
                                                 { value: 'Seçiniz', label: 'Seçiniz' },
-                                                { value: 'P1', label: 'P1' },
-                                                { value: 'P2', label: 'P2' },
-                                                { value: 'P3', label: 'P3' },
-                                                { value: 'P4', label: 'P4' },
-                                                { value: 'P5', label: 'P5' },
+                                                { value: 'Komori 70X100', label: 'Komori 70X100' },
+                                                { value: 'Roland 70X100', label: 'Roland 70X100' },
+                                                { value: 'Planeta 100X140', label: 'Planeta 100X140' },
+
                                             ]}
                                             isOptionEqualToValue={(option, value) => option.label === value.label}
                                             value={order.baskiMakinasi !== null ? order.baskiMakinasi : null} // Use null explicitly
@@ -424,7 +466,7 @@ const OrderForm = () => {
 
                             <ComponentWrapper>
                                 <div style={{ display: 'flex', width: '100%' }}>
-                                    <div style={{ paddingRight: '10px', flex: '1' }}>
+                                    <div style={{ flex: '1' }}>
                                         <TextField
                                             label="Bıçak Kodu"
                                             type="text"

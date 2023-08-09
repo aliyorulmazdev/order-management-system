@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import styled from 'styled-components';
 import 'react-datepicker/dist/react-datepicker.css';
 import { registerLocale } from 'react-datepicker';
@@ -17,6 +18,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+
 
 registerLocale('tr', tr);
 const getPhotoSwatchStyle = {
@@ -172,24 +174,40 @@ const OrderForm = () => {
         { value: 'CMYK', label: 'Cyan, Magenta, Yellow, and Key (CMYK)' },
     ]);
     const isOptionEqualToValue = (option, value) => option.pantone === value.pantone;
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         // Check if the "Sipariş Adı" field is empty
         if (!order.isinAdi) {
             setIsIsinAdiEmpty(true); // Set the error state to true
             return;
         }
-
+    
         // If the "Sipariş Adı" field is not empty, proceed with form submission
         setIsIsinAdiEmpty(false); // Reset the error state to false
-
+    
         try {
-            // ... Existing code for form submission ...
+            // Send the order data to the server using axios
+            const response = await axios.post('http://localhost:5000/api/createOrder', order, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+    
+            if (response.status === 200) {
+                console.log('Sipariş gönderildi:', order);
+                alert('Sipariş gönderildi!');
+                window.location.reload();
+            } else {
+                console.log('Sipariş gönderilirken bir hata oluştu.');
+                alert('Sipariş gönderilirken bir hata oluştu.');
+            }
         } catch (error) {
-            // ... Existing error handling code ...
+            console.error('Hata:', error);
+            alert('Bir hata oluştu.');
         }
     };
+    
 
     return (
         <ThemeProvider theme={theme}>
